@@ -336,10 +336,19 @@ export const deleteUser = mutation({
 export const setSuperAdmin = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new ConvexError("يجب تسجيل الدخول أولاً");
+    // TEMPORARY: Bypass authentication for initial setup
+    // Find user by email directly
+    const targetEmail = "admin@health.com";
+    
+    // Query all users to find the one with matching email
+    const allUsers = await ctx.db.query("users").collect();
+    const targetUser = allUsers.find((user) => user.email === targetEmail);
+    
+    if (!targetUser) {
+      throw new ConvexError(`لم يتم العثور على مستخدم بالبريد الإلكتروني: ${targetEmail}`);
     }
+    
+    const userId = targetUser._id;
 
     // التحقق من عدم وجود مدير افتراضي
     const existingSuperAdmin = await ctx.db
@@ -351,7 +360,7 @@ export const setSuperAdmin = mutation({
       throw new ConvexError("يوجد مدير افتراضي بالفعل");
     }
 
-    // التحقق من وجود ملف تعريف للمستخدم الحالي
+    // التحقق من وجود ملف تعريف للمستخدم
     const existingProfile = await ctx.db
       .query("userProfiles")
       .withIndex("by_user", (q) => q.eq("userId", userId))

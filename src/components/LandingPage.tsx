@@ -154,10 +154,19 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             
             <div>
               <h3 className="text-lg font-bold mb-4 text-start">تواصل معنا</h3>
-              <ul className="space-y-2 text-start">
-                <li className="text-gray-400">📧 info@health-campaigns.sa</li>
-                <li className="text-gray-400">📞 +966 50 123 4567</li>
-                <li className="text-gray-400">📍 الرياض، المملكة العربية السعودية</li>
+              <ul className="space-y-3 text-start">
+                <li className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors">
+                  <span className="text-xl flex-shrink-0">📧</span>
+                  <span className="text-sm font-medium" dir="ltr">info@kirkuk-health.gov.iq</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors">
+                  <span className="text-xl flex-shrink-0">📞</span>
+                  <span className="text-sm font-medium" dir="ltr">07704043411</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-300">
+                  <span className="text-xl flex-shrink-0 mt-0.5">📍</span>
+                  <span className="text-sm font-medium">كركوك، العراق - قطاع كركوك الأول</span>
+                </li>
               </ul>
             </div>
           </div>
