@@ -59,8 +59,19 @@ export function SignInForm() {
         <div className="p-8">
           {/* شعار دائرة صحة كركوك */}
           <div className="mb-6 text-center">
-            <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg">
-              <span className="text-4xl">🏥</span>
+            <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center">
+              <img 
+                src="/kirkuk-logo.png" 
+                alt="شعار دائرة صحة كركوك"
+                className="w-20 h-20 object-contain"
+                onError={(e) => {
+                  // Fallback to the same logo URL used in Dashboard sidebar
+                  const target = e.target as HTMLImageElement;
+                  if (!target.src.includes("polished-pony-114.convex.cloud")) {
+                    target.src = "https://polished-pony-114.convex.cloud/api/storage/b69b6463-3c48-4960-9c5b-e58e96902f2e";
+                  }
+                }}
+              />
             </div>
             <h1 className="text-xl font-bold mb-1" style={{ color: '#111827' }}>دائرة صحة كركوك</h1>
             <p className="text-xs font-semibold mb-1" style={{ color: '#059669' }}>قطاع كركوك الأول - وحدة تعزيز الصحة</p>
