@@ -310,3 +310,101 @@ export function exportToExcel(
   XLSX.writeFile(workbook, fileName);
 }
 
+/**
+ * Export stats to Excel with simplified format
+ * @param data - Array of items with topicName and stats fields
+ * @param fileName - Name of the file (without extension)
+ */
+export const exportStatsToExcel = (data: any, fileName: string) => {
+  // 1. تعريف العناوين الرئيسية بناءً على النموذج الورقي 
+  const headers = [
+    ["دائرة صحة كركوك - قطاع كركوك الأول - إحصائية تعزيز الصحة"],
+    ["الموضوع", "اللقاءات الفردية", "المحاضرات", "الندوات", "المناسبات الصحية"]
+  ];
+
+  // 2. تحويل البيانات المجمعة إلى صفوف 
+  const rows = data.map((item: any) => [
+    item.topicName,
+    item.individualMeetings || 0,
+    item.lectures || 0,
+    item.seminars || 0,
+    item.healthEvents || 0
+  ]);
+
+  // 3. إنشاء ورقة العمل وتنسيقها
+  const worksheet = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+  
+  // ضبط اتجاه الورقة من اليمين لليسار (RTL) للعربية
+  // Note: XLSX library doesn't directly support RTL in !settings, but we can format cells
+  // Excel will automatically detect RTL based on Arabic text content
+  
+  // Set column widths
+  worksheet["!cols"] = [
+    { wch: 40 }, // الموضوع (Subject)
+    { wch: 18 }, // اللقاءات الفردية (Individual Meetings)
+    { wch: 15 }, // المحاضرات (Lectures)
+    { wch: 15 }, // الندوات (Seminars)
+    { wch: 18 }, // المناسبات الصحية (Health Events)
+  ];
+
+  // Merge title row (row 0, columns 0-4)
+  if (!worksheet["!merges"]) worksheet["!merges"] = [];
+  worksheet["!merges"].push({
+    s: { r: 0, c: 0 },
+    e: { r: 0, c: 4 },
+  });
+
+  // Format title row (row 0) - bold and centered
+  const titleCellAddress = XLSX.utils.encode_cell({ r: 0, c: 0 });
+  if (worksheet[titleCellAddress]) {
+    worksheet[titleCellAddress].s = {
+      font: { bold: true, sz: 14 },
+      alignment: { horizontal: "center", vertical: "center" },
+    };
+  }
+
+  // Format header row (row 1) - bold with RTL alignment
+  for (let col = 0; col <= 4; col++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: 1, c: col });
+    if (!worksheet[cellAddress]) continue;
+    
+    worksheet[cellAddress].s = {
+      font: { bold: true },
+      alignment: { 
+        horizontal: col === 0 ? "right" : "center", 
+        vertical: "center",
+      },
+    };
+  }
+
+  // Format data rows with RTL alignment for Arabic text
+  for (let row = 2; row < rows.length + 2; row++) {
+    for (let col = 0; col <= 4; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+      if (!worksheet[cellAddress]) continue;
+      
+      const cellValue = worksheet[cellAddress].v;
+      
+      // Apply RTL alignment for Arabic text column, center for numbers
+      if (typeof cellValue === "string" && col === 0) {
+        // Arabic text column - align right for RTL
+        if (!worksheet[cellAddress].s) worksheet[cellAddress].s = {};
+        if (!worksheet[cellAddress].s.alignment) worksheet[cellAddress].s.alignment = {};
+        worksheet[cellAddress].s.alignment.horizontal = "right";
+        worksheet[cellAddress].s.alignment.vertical = "center";
+      } else if (typeof cellValue === "number") {
+        // Number column - align center
+        if (!worksheet[cellAddress].s) worksheet[cellAddress].s = {};
+        if (!worksheet[cellAddress].s.alignment) worksheet[cellAddress].s.alignment = {};
+        worksheet[cellAddress].s.alignment.horizontal = "center";
+        worksheet[cellAddress].s.alignment.vertical = "center";
+      }
+    }
+  }
+
+  // 4. إنشاء الكتاب وحفظ الملف
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "الإحصائية الموحدة");
+  XLSX.writeFile(workbook, `${fileName}.xlsx`);
+};
+

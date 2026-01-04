@@ -18,7 +18,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { exportConsolidatedMonthlyReport } from "../lib/dailyStatsExporter";
-import { exportToExcel } from "../lib/exportToExcel";
+import { exportToExcel, exportStatsToExcel } from "../lib/exportToExcel";
+import { Download } from "lucide-react";
 
 export default function ManagerDashboard() {
   const analytics = useQuery(api.managerAnalytics.getAnalytics);
@@ -29,6 +30,7 @@ export default function ManagerDashboard() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingOfficial, setIsExportingOfficial] = useState(false);
+  const [isExportingSimplified, setIsExportingSimplified] = useState(false);
   
   const consolidatedReport = useQuery(
     api.stats.getConsolidatedMonthlyReport,
@@ -126,6 +128,70 @@ export default function ManagerDashboard() {
     }
   };
 
+  const handleDownload = () => {
+    if (!aggregatedStats || !aggregatedStats.aggregated || Object.keys(aggregatedStats.aggregated).length === 0) {
+      toast.error("لا توجد بيانات للتصدير");
+      return;
+    }
+
+    if (allTopics.length === 0) {
+      toast.error("لا توجد مواضيع متاحة");
+      return;
+    }
+
+    setIsExportingSimplified(true);
+    try {
+      // تحويل البيانات المجمعة إلى الصيغة المطلوبة
+      const aggregatedData = allTopics
+        .filter((topic) => topic.isActive)
+        .map((topic) => {
+          const topicData = aggregatedStats.aggregated[topic._id] || {
+            individualMeetings: 0,
+            lectures: 0,
+            seminars: 0,
+            healthEvents: 0,
+          };
+
+          return {
+            topicName: topic.nameAr,
+            individualMeetings: topicData.individualMeetings || 0,
+            lectures: topicData.lectures || 0,
+            seminars: topicData.seminars || 0,
+            healthEvents: topicData.healthEvents || 0,
+          };
+        })
+        .sort((a, b) => {
+          // ترتيب حسب التصنيف ثم الترتيب
+          const categoryA = categoriesWithTopics.find((cat) =>
+            cat.topics.some((t) => t.nameAr === a.topicName)
+          );
+          const categoryB = categoriesWithTopics.find((cat) =>
+            cat.topics.some((t) => t.nameAr === b.topicName)
+          );
+          
+          if (categoryA && categoryB) {
+            if (categoryA.order !== categoryB.order) {
+              return categoryA.order - categoryB.order;
+            }
+          }
+          
+          const topicA = allTopics.find((t) => t.nameAr === a.topicName);
+          const topicB = allTopics.find((t) => t.nameAr === b.topicName);
+          
+          return (topicA?.order || 0) - (topicB?.order || 0);
+        });
+
+      const reportDate = new Date().toLocaleDateString('ar-IQ');
+      exportStatsToExcel(aggregatedData, `إحصائية_قطاع_كركوك_الأول_${reportDate}`);
+      toast.success("تم تصدير الإحصائية الموحدة بنجاح");
+    } catch (error) {
+      toast.error("حدث خطأ أثناء التصدير");
+      console.error(error);
+    } finally {
+      setIsExportingSimplified(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* زر تصدير الإحصائية الموحدة */}
@@ -163,7 +229,24 @@ export default function ManagerDashboard() {
               />
             </div>
           </div>
-          <div className="flex items-end gap-3">
+          <div className="flex items-end gap-3 flex-wrap">
+            <button
+              onClick={handleDownload}
+              disabled={isExportingSimplified || !aggregatedStats || !aggregatedStats.aggregated || Object.keys(aggregatedStats.aggregated).length === 0}
+              className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isExportingSimplified ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>جاري التصدير...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-5 h-5" />
+                  <span>تصدير الإحصائية الموحدة (Excel)</span>
+                </>
+              )}
+            </button>
             <button
               onClick={handleExportOfficialReport}
               disabled={isExportingOfficial || !aggregatedStats || !aggregatedStats.aggregated || Object.keys(aggregatedStats.aggregated).length === 0}
