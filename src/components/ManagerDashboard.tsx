@@ -18,6 +18,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { exportConsolidatedMonthlyReport } from "../lib/dailyStatsExporter";
+import { exportToExcel } from "../lib/exportToExcel";
 
 export default function ManagerDashboard() {
   const analytics = useQuery(api.managerAnalytics.getAnalytics);
@@ -27,11 +28,37 @@ export default function ManagerDashboard() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingOfficial, setIsExportingOfficial] = useState(false);
   
   const consolidatedReport = useQuery(
     api.stats.getConsolidatedMonthlyReport,
     { month: selectedMonth, year: selectedYear }
   );
+
+  // Get aggregated stats for official report
+  const aggregatedStats = useQuery(
+    api.stats.getAggregatedStats,
+    { month: selectedMonth, year: selectedYear }
+  );
+
+  // Get categories and topics for export
+  const categories = useQuery(api.statCategories.list, { includeInactive: false }) || [];
+  const allTopics = useQuery(api.statTopics.list, { includeInactive: false }) || [];
+
+  // Organize topics by category
+  const categoriesWithTopics = categories.map((category) => ({
+    _id: category._id,
+    nameAr: category.nameAr,
+    order: category.order,
+    topics: allTopics
+      .filter((topic) => topic.categoryId === category._id && topic.isActive)
+      .map((topic) => ({
+        _id: topic._id,
+        nameAr: topic.nameAr,
+        order: topic.order,
+      }))
+      .sort((a, b) => a.order - b.order),
+  })).sort((a, b) => a.order - b.order);
 
   if (!analytics || !comparison || !trends) {
     return (
@@ -67,6 +94,35 @@ export default function ManagerDashboard() {
       console.error(error);
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleExportOfficialReport = async () => {
+    if (!aggregatedStats || !aggregatedStats.aggregated || Object.keys(aggregatedStats.aggregated).length === 0) {
+      toast.error("لا توجد بيانات للتصدير");
+      return;
+    }
+
+    if (categoriesWithTopics.length === 0) {
+      toast.error("لا توجد تصنيفات متاحة");
+      return;
+    }
+
+    setIsExportingOfficial(true);
+    try {
+      exportToExcel(
+        aggregatedStats.aggregated,
+        categoriesWithTopics,
+        selectedMonth,
+        selectedYear,
+        aggregatedStats.totalReports
+      );
+      toast.success("تم تحميل التقرير الرسمي بنجاح");
+    } catch (error) {
+      toast.error("حدث خطأ أثناء التصدير");
+      console.error(error);
+    } finally {
+      setIsExportingOfficial(false);
     }
   };
 
@@ -107,7 +163,24 @@ export default function ManagerDashboard() {
               />
             </div>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end gap-3">
+            <button
+              onClick={handleExportOfficialReport}
+              disabled={isExportingOfficial || !aggregatedStats || !aggregatedStats.aggregated || Object.keys(aggregatedStats.aggregated).length === 0}
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isExportingOfficial ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>جاري التصدير...</span>
+                </>
+              ) : (
+                <>
+                  <span>📥</span>
+                  <span>تحميل التقرير الرسمي</span>
+                </>
+              )}
+            </button>
             <button
               onClick={handleExport}
               disabled={isExporting || !consolidatedReport || !consolidatedReport.consolidated}
