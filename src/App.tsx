@@ -21,12 +21,13 @@ import ManagerDashboard from "./components/ManagerDashboard";
 import UserManagement from "./components/UserManagement";
 import UserRegistration from "./components/UserRegistration";
 import DailyStatsForm from "./components/DailyStatsForm";
+import ManageTopics from "./components/ManageTopics";
 
 export default function App() {
   const user = useQuery(api.auth.loggedInUser);
   const userProfile = useQuery(api.userManagement.getCurrentUserProfile);
   const [currentPage, setCurrentPage] = useState<
-    "landing" | "dashboard" | "campaigns" | "activities" | "centers" | "posters" | "gallery" | "reports" | "stats" | "weekly" | "review" | "manager" | "users" | "daily"
+    "landing" | "dashboard" | "campaigns" | "activities" | "centers" | "posters" | "gallery" | "reports" | "stats" | "weekly" | "review" | "manager" | "users" | "daily" | "topics"
   >("landing");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -263,6 +264,17 @@ export default function App() {
                       <span className="text-xl">👥</span>
                       <span>إدارة المستخدمين</span>
                     </button>
+                    <button
+                      onClick={() => handlePageChange("topics")}
+                      className={`w-full text-start px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-3 ${
+                        currentPage === "topics"
+                          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      <span className="text-xl">📋</span>
+                      <span>إدارة التصنيفات والمواضيع</span>
+                    </button>
                   </>
                 )}
                 
@@ -344,6 +356,7 @@ export default function App() {
                     {currentPage === "review" && "مراجعة الإحصائيات"}
                     {currentPage === "manager" && "لوحة تحكم المدير"}
                     {currentPage === "users" && "إدارة المستخدمين"}
+                    {currentPage === "topics" && "إدارة التصنيفات والمواضيع"}
                     {currentPage === "reports" && "التقارير"}
                   </h2>
                 </div>
@@ -367,6 +380,7 @@ export default function App() {
                 {currentPage === "review" && <ManagerReview />}
                 {currentPage === "manager" && <ManagerDashboard />}
                 {currentPage === "users" && <UserManagement />}
+                {currentPage === "topics" && <ManageTopics />}
                 {currentPage === "reports" && <Reports />}
               </div>
             </div>

@@ -21,6 +21,9 @@ import type * as posterFeatures from "../posterFeatures.js";
 import type * as posterRatings from "../posterRatings.js";
 import type * as posters from "../posters.js";
 import type * as router from "../router.js";
+import type * as statCategories from "../statCategories.js";
+import type * as statTopics from "../statTopics.js";
+import type * as stats from "../stats.js";
 import type * as userManagement from "../userManagement.js";
 import type * as weeklyStats from "../weeklyStats.js";
 
@@ -52,6 +55,9 @@ declare const fullApi: ApiFromModules<{
   posterRatings: typeof posterRatings;
   posters: typeof posters;
   router: typeof router;
+  statCategories: typeof statCategories;
+  statTopics: typeof statTopics;
+  stats: typeof stats;
   userManagement: typeof userManagement;
   weeklyStats: typeof weeklyStats;
 }>;

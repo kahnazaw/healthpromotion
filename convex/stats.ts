@@ -3,6 +3,14 @@ import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError } from "convex/values";
 
+// تعريف بنية العنصر الفرعي (اللقاءات، المحاضرات، إلخ)
+const subItemValidator = v.object({
+  individualMeetings: v.number(),
+  lectures: v.number(),
+  seminars: v.number(),
+  healthEvents: v.number(),
+});
+
 // Helper function to validate that all fields in a sub-item are numbers
 function validateSubItem(item: any): boolean {
   return (
@@ -13,36 +21,17 @@ function validateSubItem(item: any): boolean {
   );
 }
 
-// Helper function to validate all sub-items in a category
-function validateCategory(category: any): boolean {
-  if (!category || typeof category !== "object") return false;
+// Helper function to validate the data record (topicId -> subItem)
+function validateStatsData(data: any): boolean {
+  if (!data || typeof data !== "object") return false;
   
-  for (const key in category) {
-    if (!validateSubItem(category[key])) {
+  // data should be a record/object where keys are topicIds and values are subItems
+  for (const topicId in data) {
+    if (!validateSubItem(data[topicId])) {
       return false;
     }
   }
   return true;
-}
-
-// Helper function to validate the entire stats object
-function validateStatsData(data: any): boolean {
-  if (!data || typeof data !== "object") return false;
-
-  // Validate all categories
-  return (
-    validateCategory(data.maternalChildHealth) &&
-    validateCategory(data.immunization) &&
-    validateCategory(data.communicableDiseases) &&
-    validateCategory(data.nonCommunicableDiseases) &&
-    validateCategory(data.mentalHealth) &&
-    validateSubItem(data.firstAidOccupationalSafety) &&
-    validateSubItem(data.generalPersonalHygiene) &&
-    validateSubItem(data.drugMisuse) &&
-    validateSubItem(data.drugResistance) &&
-    validateSubItem(data.healthEventsCategory) &&
-    validateSubItem(data.others)
-  );
 }
 
 // Get daily reports - filtered by user role
@@ -140,43 +129,27 @@ function sumSubItems(item1: any, item2: any) {
   };
 }
 
-// Helper function to sum two categories
-function sumCategory(category1: any, category2: any) {
-  if (!category1 && !category2) return null;
-  if (!category1) return category2;
-  if (!category2) return category1;
-
+// Helper function to sum two data records (topicId -> subItem)
+function sumStatsData(data1: any, data2: any): any {
   const result: any = {};
-  for (const key in category1) {
-    if (category2[key]) {
-      result[key] = sumSubItems(category1[key], category2[key]);
+  
+  // جمع جميع المواضيع من data1
+  for (const topicId in data1) {
+    result[topicId] = { ...data1[topicId] };
+  }
+  
+  // جمع المواضيع من data2
+  for (const topicId in data2) {
+    if (result[topicId]) {
+      // إذا كان الموضوع موجود في data1، قم بجمع القيم
+      result[topicId] = sumSubItems(result[topicId], data2[topicId]);
     } else {
-      result[key] = category1[key];
+      // إذا لم يكن موجود، أضفه كما هو
+      result[topicId] = { ...data2[topicId] };
     }
   }
-  for (const key in category2) {
-    if (!result[key]) {
-      result[key] = category2[key];
-    }
-  }
+  
   return result;
-}
-
-// Helper function to sum entire stats objects
-function sumStats(stats1: any, stats2: any) {
-  return {
-    maternalChildHealth: sumCategory(stats1?.maternalChildHealth, stats2?.maternalChildHealth),
-    immunization: sumCategory(stats1?.immunization, stats2?.immunization),
-    communicableDiseases: sumCategory(stats1?.communicableDiseases, stats2?.communicableDiseases),
-    nonCommunicableDiseases: sumCategory(stats1?.nonCommunicableDiseases, stats2?.nonCommunicableDiseases),
-    mentalHealth: sumCategory(stats1?.mentalHealth, stats2?.mentalHealth),
-    firstAidOccupationalSafety: sumSubItems(stats1?.firstAidOccupationalSafety, stats2?.firstAidOccupationalSafety),
-    generalPersonalHygiene: sumSubItems(stats1?.generalPersonalHygiene, stats2?.generalPersonalHygiene),
-    drugMisuse: sumSubItems(stats1?.drugMisuse, stats2?.drugMisuse),
-    drugResistance: sumSubItems(stats1?.drugResistance, stats2?.drugResistance),
-    healthEventsCategory: sumSubItems(stats1?.healthEventsCategory, stats2?.healthEventsCategory),
-    others: sumSubItems(stats1?.others, stats2?.others),
-  };
 }
 
 // Get consolidated monthly report - aggregates all submitted reports for a month
@@ -233,27 +206,11 @@ export const getConsolidatedMonthlyReport = query({
     }
 
     // Aggregate all reports
-    let consolidated: any = null;
+    let consolidated: any = {};
 
     for (const report of monthlyReports) {
-      const reportData = {
-        maternalChildHealth: report.maternalChildHealth,
-        immunization: report.immunization,
-        communicableDiseases: report.communicableDiseases,
-        nonCommunicableDiseases: report.nonCommunicableDiseases,
-        mentalHealth: report.mentalHealth,
-        firstAidOccupationalSafety: report.firstAidOccupationalSafety,
-        generalPersonalHygiene: report.generalPersonalHygiene,
-        drugMisuse: report.drugMisuse,
-        drugResistance: report.drugResistance,
-        healthEventsCategory: report.healthEventsCategory,
-        others: report.others,
-      };
-
-      if (!consolidated) {
-        consolidated = reportData;
-      } else {
-        consolidated = sumStats(consolidated, reportData);
+      if (report.data) {
+        consolidated = sumStatsData(consolidated, report.data);
       }
     }
 
@@ -265,333 +222,19 @@ export const getConsolidatedMonthlyReport = query({
       year: args.year,
       totalCenters: uniqueCenters.size,
       totalReports: monthlyReports.length,
-      consolidated,
+      consolidated: Object.keys(consolidated).length > 0 ? consolidated : null,
     };
   },
 });
 
-// Submit daily report with validation
+// Submit daily report with validation - using dynamic structure
 export const submitDailyReport = mutation({
   args: {
     healthCenterId: v.id("healthCenters"),
     submissionDate: v.number(),
     status: v.union(v.literal("draft"), v.literal("submitted"), v.literal("reviewed")),
-    maternalChildHealth: v.object({
-      preMarriageExamination: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      pregnancyCareVisits: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      pregnantVaccination: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      pregnantNutrition: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      highRiskPregnant: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      postDeliveryExamination: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      familyPlanning: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      womenSafePeriod: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      breastCancer: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      breastfeeding: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      childrenComplementaryFood: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      childrenDiarrhea: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      childrenRespiratoryInfections: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-    }),
-    immunization: v.object({
-      childrenVaccination: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      reproductiveAgeMothersVaccination: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      newRoutineVaccines: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      vaccinationCampaigns: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      otherVaccines: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-    }),
-    communicableDiseases: v.object({
-      cholera: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      pandemicInfluenza: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      typhoid: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      foodPoisoning: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      viralHepatitis: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      tuberculosis: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      aids: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      sexuallyTransmittedDiseases: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      hemorrhagicFever: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      leishmaniasis: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      bilharzia: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      intestinalParasites: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      rabies: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-    }),
-    nonCommunicableDiseases: v.object({
-      hypertensionDiabetes: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      heartDiseases: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      osteoporosis: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      healthyNutrition: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      obesity: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      iodizedSalt: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      anemia: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      vitaminA: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      physicalActivity: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      thalassemia: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-    }),
-    mentalHealth: v.object({
-      adolescentsYouth: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      smoking: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      drugs: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-      domesticViolence: v.object({
-        individualMeetings: v.number(),
-        lectures: v.number(),
-        seminars: v.number(),
-        healthEvents: v.number(),
-      }),
-    }),
-    firstAidOccupationalSafety: v.object({
-      individualMeetings: v.number(),
-      lectures: v.number(),
-      seminars: v.number(),
-      healthEvents: v.number(),
-    }),
-    generalPersonalHygiene: v.object({
-      individualMeetings: v.number(),
-      lectures: v.number(),
-      seminars: v.number(),
-      healthEvents: v.number(),
-    }),
-    drugMisuse: v.object({
-      individualMeetings: v.number(),
-      lectures: v.number(),
-      seminars: v.number(),
-      healthEvents: v.number(),
-    }),
-    drugResistance: v.object({
-      individualMeetings: v.number(),
-      lectures: v.number(),
-      seminars: v.number(),
-      healthEvents: v.number(),
-    }),
-    healthEventsCategory: v.object({
-      individualMeetings: v.number(),
-      lectures: v.number(),
-      seminars: v.number(),
-      healthEvents: v.number(),
-    }),
-    others: v.object({
-      individualMeetings: v.number(),
-      lectures: v.number(),
-      seminars: v.number(),
-      healthEvents: v.number(),
-    }),
+    // البيانات الديناميكية: record من topicId (string) إلى القيم الأربعة
+    data: v.record(v.string(), subItemValidator),
     review: v.optional(v.object({
       reviewedBy: v.id("users"),
       reviewedAt: v.number(),
@@ -605,22 +248,7 @@ export const submitDailyReport = mutation({
     }
 
     // Validate that all fields are numbers
-    // Convex schema validation will handle this, but we add extra validation for safety
-    const statsData = {
-      maternalChildHealth: args.maternalChildHealth,
-      immunization: args.immunization,
-      communicableDiseases: args.communicableDiseases,
-      nonCommunicableDiseases: args.nonCommunicableDiseases,
-      mentalHealth: args.mentalHealth,
-      firstAidOccupationalSafety: args.firstAidOccupationalSafety,
-      generalPersonalHygiene: args.generalPersonalHygiene,
-      drugMisuse: args.drugMisuse,
-      drugResistance: args.drugResistance,
-      healthEventsCategory: args.healthEventsCategory,
-      others: args.others,
-    };
-
-    if (!validateStatsData(statsData)) {
+    if (!validateStatsData(args.data)) {
       throw new ConvexError("جميع الحقول يجب أن تكون أرقام صحيحة");
     }
 
@@ -636,17 +264,7 @@ export const submitDailyReport = mutation({
       // Update existing report
       await ctx.db.patch(existingReport._id, {
         status: args.status,
-        maternalChildHealth: args.maternalChildHealth,
-        immunization: args.immunization,
-        communicableDiseases: args.communicableDiseases,
-        nonCommunicableDiseases: args.nonCommunicableDiseases,
-        mentalHealth: args.mentalHealth,
-        firstAidOccupationalSafety: args.firstAidOccupationalSafety,
-        generalPersonalHygiene: args.generalPersonalHygiene,
-        drugMisuse: args.drugMisuse,
-        drugResistance: args.drugResistance,
-        healthEventsCategory: args.healthEventsCategory,
-        others: args.others,
+        data: args.data,
         review: args.review,
         submittedAt: args.status === "submitted" ? Date.now() : existingReport.submittedAt,
       });
@@ -660,17 +278,7 @@ export const submitDailyReport = mutation({
         createdBy: userId,
         status: args.status,
         submittedAt: args.status === "submitted" ? Date.now() : undefined,
-        maternalChildHealth: args.maternalChildHealth,
-        immunization: args.immunization,
-        communicableDiseases: args.communicableDiseases,
-        nonCommunicableDiseases: args.nonCommunicableDiseases,
-        mentalHealth: args.mentalHealth,
-        firstAidOccupationalSafety: args.firstAidOccupationalSafety,
-        generalPersonalHygiene: args.generalPersonalHygiene,
-        drugMisuse: args.drugMisuse,
-        drugResistance: args.drugResistance,
-        healthEventsCategory: args.healthEventsCategory,
-        others: args.others,
+        data: args.data,
         review: args.review,
       });
 
@@ -679,3 +287,169 @@ export const submitDailyReport = mutation({
   },
 });
 
+// Get aggregated stats for a specific date or month
+export const getAggregatedStats = query({
+  args: {
+    date: v.optional(v.number()), // Timestamp for specific date
+    month: v.optional(v.number()), // 1-12
+    year: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("يجب تسجيل الدخول أولاً");
+    }
+
+    // Get user profile to check permissions
+    const userProfile = await ctx.db
+      .query("userProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!userProfile) {
+      throw new ConvexError("ملف المستخدم غير موجود");
+    }
+
+    // Only admins can view aggregated stats
+    const isAdmin = userProfile.role === "admin" || userProfile.role === "super_admin";
+    if (!isAdmin) {
+      throw new ConvexError("ليس لديك صلاحية لعرض الإحصائيات المجمعة");
+    }
+
+    // Calculate date range
+    let startDate: number;
+    let endDate: number;
+
+    if (args.date) {
+      // Specific date
+      const dateObj = new Date(args.date);
+      startDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()).setHours(0, 0, 0, 0);
+      endDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()).setHours(23, 59, 59, 999);
+    } else if (args.month && args.year) {
+      // Month range
+      startDate = new Date(args.year, args.month - 1, 1).setHours(0, 0, 0, 0);
+      endDate = new Date(args.year, args.month, 0).setHours(23, 59, 59, 999);
+    } else {
+      throw new ConvexError("يجب توفير date أو month و year");
+    }
+
+    // Get all submitted or reviewed reports in the date range
+    const allReports = await ctx.db
+      .query("dailyHealthStats")
+      .withIndex("by_status", (q) => 
+        q.eq("status", "submitted")
+      )
+      .collect();
+
+    // Also get reviewed reports
+    const reviewedReports = await ctx.db
+      .query("dailyHealthStats")
+      .withIndex("by_status", (q) => 
+        q.eq("status", "reviewed")
+      )
+      .collect();
+
+    // Combine and filter by date range
+    const filteredReports = [...allReports, ...reviewedReports].filter(
+      (report) => report.submissionDate >= startDate && report.submissionDate <= endDate
+    );
+
+    if (filteredReports.length === 0) {
+      return {
+        aggregated: {},
+        highlights: {
+          totalChildVaccines: 0,
+          totalMaternalLectures: 0,
+          overallHealthEvents: 0,
+        },
+        totalReports: 0,
+        dateRange: {
+          start: startDate,
+          end: endDate,
+        },
+      };
+    }
+
+    // Initialize aggregated data structure
+    let aggregated: Record<string, any> = {};
+
+    // Aggregate all reports
+    for (const report of filteredReports) {
+      if (report.data) {
+        aggregated = sumStatsData(aggregated, report.data);
+      }
+    }
+
+    // Get all topics and categories for calculating highlights
+    const allTopics = await ctx.db.query("statTopics").collect();
+    const allCategories = await ctx.db.query("statCategories").collect();
+
+    // Find topics for highlights
+    // 1. totalChildVaccines: Find topics in "التحصين" category with name containing "لقاح الأطفال"
+    const immunizationCategory = allCategories.find((cat) => 
+      cat.nameAr.includes("التحصين") || cat.name.toLowerCase().includes("immunization")
+    );
+    
+    let totalChildVaccines = 0;
+    if (immunizationCategory) {
+      const childVaccineTopics = allTopics.filter((topic) => 
+        topic.categoryId === immunizationCategory._id && 
+        (topic.nameAr.includes("لقاح الأطفال") || topic.nameAr.includes("لقاح الطفل"))
+      );
+      
+      for (const topic of childVaccineTopics) {
+        const topicData = aggregated[topic._id];
+        if (topicData) {
+          totalChildVaccines += 
+            (topicData.individualMeetings || 0) +
+            (topicData.lectures || 0) +
+            (topicData.seminars || 0) +
+            (topicData.healthEvents || 0);
+        }
+      }
+    }
+
+    // 2. totalMaternalLectures: Sum lectures in "رعاية الأم والطفل" category
+    const maternalCategory = allCategories.find((cat) => 
+      cat.nameAr.includes("رعاية الأم") || cat.nameAr.includes("الأم والطفل") ||
+      cat.name.toLowerCase().includes("maternal") || cat.name.toLowerCase().includes("child")
+    );
+    
+    let totalMaternalLectures = 0;
+    if (maternalCategory) {
+      const maternalTopics = allTopics.filter((topic) => 
+        topic.categoryId === maternalCategory._id
+      );
+      
+      for (const topic of maternalTopics) {
+        const topicData = aggregated[topic._id];
+        if (topicData) {
+          totalMaternalLectures += topicData.lectures || 0;
+        }
+      }
+    }
+
+    // 3. overallHealthEvents: Sum all healthEvents across all topics
+    let overallHealthEvents = 0;
+    for (const topicId in aggregated) {
+      const topicData = aggregated[topicId];
+      if (topicData) {
+        overallHealthEvents += topicData.healthEvents || 0;
+      }
+    }
+
+    return {
+      aggregated,
+      highlights: {
+        totalChildVaccines,
+        totalMaternalLectures,
+        overallHealthEvents,
+      },
+      totalReports: filteredReports.length,
+      dateRange: {
+        start: startDate,
+        end: endDate,
+      },
+    };
+  },
+});

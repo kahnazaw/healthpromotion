@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 
-// تعريف schema للتحقق باستخدام zod
+// تعريف schema للتحقق - ديناميكي
 const subItemSchema = z.object({
   individualMeetings: z.number().min(0).default(0),
   lectures: z.number().min(0).default(0),
@@ -18,248 +18,62 @@ const subItemSchema = z.object({
   healthEvents: z.number().min(0).default(0),
 });
 
-const dailyStatsSchema = z.object({
-  maternalChildHealth: z.object({
-    preMarriageExamination: subItemSchema,
-    pregnancyCareVisits: subItemSchema,
-    pregnantVaccination: subItemSchema,
-    pregnantNutrition: subItemSchema,
-    highRiskPregnant: subItemSchema,
-    postDeliveryExamination: subItemSchema,
-    familyPlanning: subItemSchema,
-    womenSafePeriod: subItemSchema,
-    breastCancer: subItemSchema,
-    breastfeeding: subItemSchema,
-    childrenComplementaryFood: subItemSchema,
-    childrenDiarrhea: subItemSchema,
-    childrenRespiratoryInfections: subItemSchema,
-  }),
-  immunization: z.object({
-    childrenVaccination: subItemSchema,
-    reproductiveAgeMothersVaccination: subItemSchema,
-    newRoutineVaccines: subItemSchema,
-    vaccinationCampaigns: subItemSchema,
-    otherVaccines: subItemSchema,
-  }),
-  communicableDiseases: z.object({
-    cholera: subItemSchema,
-    pandemicInfluenza: subItemSchema,
-    typhoid: subItemSchema,
-    foodPoisoning: subItemSchema,
-    viralHepatitis: subItemSchema,
-    tuberculosis: subItemSchema,
-    aids: subItemSchema,
-    sexuallyTransmittedDiseases: subItemSchema,
-    hemorrhagicFever: subItemSchema,
-    leishmaniasis: subItemSchema,
-    bilharzia: subItemSchema,
-    intestinalParasites: subItemSchema,
-    rabies: subItemSchema,
-  }),
-  nonCommunicableDiseases: z.object({
-    hypertensionDiabetes: subItemSchema,
-    heartDiseases: subItemSchema,
-    osteoporosis: subItemSchema,
-    healthyNutrition: subItemSchema,
-    obesity: subItemSchema,
-    iodizedSalt: subItemSchema,
-    anemia: subItemSchema,
-    vitaminA: subItemSchema,
-    physicalActivity: subItemSchema,
-    thalassemia: subItemSchema,
-  }),
-  mentalHealth: z.object({
-    adolescentsYouth: subItemSchema,
-    smoking: subItemSchema,
-    drugs: subItemSchema,
-    domesticViolence: subItemSchema,
-  }),
-  firstAidOccupationalSafety: subItemSchema,
-  generalPersonalHygiene: subItemSchema,
-  drugMisuse: subItemSchema,
-  drugResistance: subItemSchema,
-  healthEventsCategory: subItemSchema,
-  others: subItemSchema,
-});
-
-type DailyStatsFormData = z.infer<typeof dailyStatsSchema>;
-
-// تعريف أسماء التصنيفات والعناصر
-const categoryLabels = {
-  maternalChildHealth: {
-    title: "1. رعاية الأم والطفل",
-    items: {
-      preMarriageExamination: "فحص ما قبل الزواج",
-      pregnancyCareVisits: "رعاية الحامل والزيارات الدورية",
-      pregnantVaccination: "لقاح الحامل",
-      pregnantNutrition: "تغذية الحامل",
-      highRiskPregnant: "الحوامل المعرضات للخطورة",
-      postDeliveryExamination: "فحص ما بعد الولادة",
-      familyPlanning: "تنظيم الأسرة",
-      womenSafePeriod: "صحة المرأة فترة الأمان",
-      breastCancer: "سرطان الثدي",
-      breastfeeding: "الرضاعة من الثدي",
-      childrenComplementaryFood: "الأغذية التكميلية للأطفال",
-      childrenDiarrhea: "الأسهال عند الأطفال",
-      childrenRespiratoryInfections: "الألتهابات التنفسية عند الأطفال",
-    },
-  },
-  immunization: {
-    title: "2. التحصين",
-    items: {
-      childrenVaccination: "لقاح الأطفال",
-      reproductiveAgeMothersVaccination: "لقاح الأمهات في سن الأنجاب",
-      newRoutineVaccines: "اللقاحات الجديدة ضمن الجدول الروتيني",
-      vaccinationCampaigns: "الحملات التلقيحية",
-      otherVaccines: "اللقاحات الأخرى",
-    },
-  },
-  communicableDiseases: {
-    title: "3. الأمراض الانتقالية",
-    items: {
-      cholera: "الكوليرا",
-      pandemicInfluenza: "الأنفلونزا الوبائية",
-      typhoid: "التايفوئيد",
-      foodPoisoning: "التسمم الغذائي",
-      viralHepatitis: "الكبد الفيروسي",
-      tuberculosis: "التدرن",
-      aids: "الأيدز",
-      sexuallyTransmittedDiseases: "الأمراض المنقولة جنسيا",
-      hemorrhagicFever: "الحمى النزفية",
-      leishmaniasis: "اللشمانيا وانواعها",
-      bilharzia: "البلهارزيا",
-      intestinalParasites: "الطفيليات المعوية",
-      rabies: "داء الكلب",
-    },
-  },
-  nonCommunicableDiseases: {
-    title: "4. الأمراض غير الانتقالية",
-    items: {
-      hypertensionDiabetes: "أمراض الضغط والسكر",
-      heartDiseases: "أمراض القلب والشرايين",
-      osteoporosis: "هشاشة العظام",
-      healthyNutrition: "الغذاء الصحي",
-      obesity: "السمنة",
-      iodizedSalt: "استعمال الملح المدعم باليود",
-      anemia: "فقر الدم",
-      vitaminA: "فيتامين A",
-      physicalActivity: "النشاط البدني",
-      thalassemia: "الثلاسيميا",
-    },
-  },
-  mentalHealth: {
-    title: "5. الصحة النفسية",
-    items: {
-      adolescentsYouth: "اليافعين والشباب",
-      smoking: "التدخين",
-      drugs: "المخدرات",
-      domesticViolence: "العنف الأسري",
-    },
-  },
-  firstAidOccupationalSafety: {
-    title: "6. الأسعافات والسلامة المهنية",
-    items: null,
-  },
-  generalPersonalHygiene: {
-    title: "7. النظافة العامة والشخصية",
-    items: null,
-  },
-  drugMisuse: {
-    title: "8. سوء استخدام الادوية",
-    items: null,
-  },
-  drugResistance: {
-    title: "9. المقاومة الدوائية",
-    items: null,
-  },
-  healthEventsCategory: {
-    title: "10. المناسبات الصحية",
-    items: null,
-  },
-  others: {
-    title: "11. أخرى",
-    items: null,
-  },
-};
-
-// القيم الافتراضية
-const defaultValues: DailyStatsFormData = {
-  maternalChildHealth: {
-    preMarriageExamination: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    pregnancyCareVisits: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    pregnantVaccination: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    pregnantNutrition: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    highRiskPregnant: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    postDeliveryExamination: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    familyPlanning: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    womenSafePeriod: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    breastCancer: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    breastfeeding: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    childrenComplementaryFood: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    childrenDiarrhea: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    childrenRespiratoryInfections: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-  },
-  immunization: {
-    childrenVaccination: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    reproductiveAgeMothersVaccination: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    newRoutineVaccines: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    vaccinationCampaigns: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    otherVaccines: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-  },
-  communicableDiseases: {
-    cholera: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    pandemicInfluenza: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    typhoid: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    foodPoisoning: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    viralHepatitis: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    tuberculosis: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    aids: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    sexuallyTransmittedDiseases: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    hemorrhagicFever: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    leishmaniasis: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    bilharzia: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    intestinalParasites: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    rabies: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-  },
-  nonCommunicableDiseases: {
-    hypertensionDiabetes: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    heartDiseases: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    osteoporosis: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    healthyNutrition: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    obesity: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    iodizedSalt: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    anemia: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    vitaminA: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    physicalActivity: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    thalassemia: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-  },
-  mentalHealth: {
-    adolescentsYouth: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    smoking: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    drugs: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-    domesticViolence: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-  },
-  firstAidOccupationalSafety: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-  generalPersonalHygiene: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-  drugMisuse: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-  drugResistance: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-  healthEventsCategory: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-  others: { individualMeetings: 0, lectures: 0, seminars: 0, healthEvents: 0 },
-};
+// Schema مرن - يقبل أي topicId مع nested structure
+const flexibleSchema = z.record(
+  z.string(),
+  z.object({
+    individualMeetings: z.number().min(0),
+    lectures: z.number().min(0),
+    seminars: z.number().min(0),
+    healthEvents: z.number().min(0),
+  })
+);
 
 export default function DailyStatsForm() {
   const userProfile = useQuery(api.userManagement.getCurrentUserProfile);
   const centers = useQuery(api.healthCenters.list) || [];
+  const categories = useQuery(api.statCategories.list, { includeInactive: false }) || [];
+  const allTopics = useQuery(api.statTopics.list, { includeInactive: false }) || [];
   const submitDailyReport = useMutation(api.stats.submitDailyReport);
+
+  // تجميع المواضيع حسب التصنيف
+  const topicsByCategory = categories.reduce((acc: Record<string, typeof allTopics>, category: any) => {
+    const categoryTopics = allTopics
+      .filter((topic: any) => topic.categoryId === category._id && topic.isActive)
+      .sort((a: any, b: any) => a.order - b.order);
+    acc[category._id] = categoryTopics;
+    return acc;
+  }, {} as Record<string, typeof allTopics>);
+
+  // المواضيع النشطة
+  const activeTopics = allTopics.filter((t: any) => t.isActive);
+
+  type DailyStatsFormData = z.infer<typeof flexibleSchema>;
+
+  // القيم الافتراضية
+  const getDefaultValues = (): any => {
+    const defaults: any = {};
+    activeTopics.forEach((topic: any) => {
+      defaults[topic._id] = {
+        individualMeetings: 0,
+        lectures: 0,
+        seminars: 0,
+        healthEvents: 0,
+      };
+    });
+    return defaults;
+  };
 
   const {
     control,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<DailyStatsFormData>({
-    resolver: zodResolver(dailyStatsSchema),
-    defaultValues,
+    resolver: zodResolver(flexibleSchema),
+    defaultValues: getDefaultValues(),
   });
 
   // تحديد التاريخ الحالي كافتراضي
@@ -268,6 +82,7 @@ export default function DailyStatsForm() {
     today.toISOString().split("T")[0]
   );
   const [selectedCenterId, setSelectedCenterId] = useState<Id<"healthCenters"> | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("");
 
   // تحديد المركز الصحي تلقائياً
   useEffect(() => {
@@ -286,6 +101,13 @@ export default function DailyStatsForm() {
       }
     }
   }, [userProfile, centers, selectedCenterId]);
+
+  // تحديد التبويب الأول كافتراضي
+  useEffect(() => {
+    if (categories.length > 0 && !activeTab) {
+      setActiveTab(categories[0]._id);
+    }
+  }, [categories, activeTab]);
 
   // التحقق من الصلاحيات
   if (!userProfile) {
@@ -324,11 +146,12 @@ export default function DailyStatsForm() {
     try {
       const submissionDate = new Date(selectedDate).setHours(0, 0, 0, 0);
 
+      // البيانات جاهزة بالفعل في format nested (topicId -> subItem)
       await submitDailyReport({
         healthCenterId: selectedCenterId,
         submissionDate,
         status: "draft",
-        ...data,
+        data: data as any,
       });
 
       toast.success("تم حفظ التقرير بنجاح");
@@ -352,11 +175,32 @@ export default function DailyStatsForm() {
     try {
       const submissionDate = new Date(selectedDate).setHours(0, 0, 0, 0);
 
+      // تحويل البيانات إلى format record (topicId as string -> subItem)
+      const dataRecord: Record<string, any> = {};
+      activeTopics.forEach((topic: any) => {
+        const topicId = topic._id as string;
+        if (data[topicId]) {
+          dataRecord[topicId] = {
+            individualMeetings: data[topicId].individualMeetings || 0,
+            lectures: data[topicId].lectures || 0,
+            seminars: data[topicId].seminars || 0,
+            healthEvents: data[topicId].healthEvents || 0,
+          };
+        } else {
+          dataRecord[topicId] = {
+            individualMeetings: 0,
+            lectures: 0,
+            seminars: 0,
+            healthEvents: 0,
+          };
+        }
+      });
+
       await submitDailyReport({
         healthCenterId: selectedCenterId,
         submissionDate,
         status: "submitted",
-        ...data,
+        data: dataRecord,
       });
 
       toast.success("تم إرسال التقرير بنجاح");
@@ -367,216 +211,192 @@ export default function DailyStatsForm() {
     }
   };
 
-  const renderSubItemCard = (
-    category: string,
-    itemKey: string,
-    itemLabel: string
-  ) => {
+  const renderTopicRow = (topic: any, category: any) => {
     return (
-      <div
-        key={itemKey}
-        className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow"
-      >
-        <h4 className="text-sm font-semibold text-gray-900 mb-3 text-start">
-          {itemLabel}
-        </h4>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div>
-            <label className="block text-xs text-gray-600 mb-1 text-start">
-              اللقاءات الفردية
-            </label>
-            <Controller
-              name={`${category}.${itemKey}.individualMeetings` as any}
-              control={control}
-              render={({ field }) => (
+      <tr key={topic._id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+        <td className="px-3 sm:px-4 py-3 text-sm sm:text-base font-medium text-gray-900 text-start">
+          {topic.nameAr}
+        </td>
+        <td className="px-1 sm:px-2 py-2">
+          <Controller
+            name={`${topic._id}.individualMeetings` as any}
+            control={control}
+            render={({ field }) => {
+              const topicData = watch(topic._id as any) || {
+                individualMeetings: 0,
+                lectures: 0,
+                seminars: 0,
+                healthEvents: 0,
+              };
+              return (
                 <Input
                   type="number"
                   min="0"
-                  {...field}
-                  value={field.value || 0}
-                  onChange={(e) => field.onChange(Number(e.target.value) || 0)}
-                  className="w-full text-center text-sm"
+                  value={topicData.individualMeetings || 0}
+                  onChange={(e) => {
+                    const value = Number(e.target.value) || 0;
+                    setValue(topic._id as any, {
+                      ...topicData,
+                      individualMeetings: value,
+                    });
+                  }}
+                  className="w-full text-center text-sm sm:text-base"
                   dir="ltr"
+                  placeholder="0"
                 />
-              )}
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1 text-start">
-              المحاضرات
-            </label>
-            <Controller
-              name={`${category}.${itemKey}.lectures` as any}
-              control={control}
-              render={({ field }) => (
+              );
+            }}
+          />
+        </td>
+        <td className="px-1 sm:px-2 py-2">
+          <Controller
+            name={`${topic._id}.lectures` as any}
+            control={control}
+            render={({ field }) => {
+              const topicData = watch(topic._id as any) || {
+                individualMeetings: 0,
+                lectures: 0,
+                seminars: 0,
+                healthEvents: 0,
+              };
+              return (
                 <Input
                   type="number"
                   min="0"
-                  {...field}
-                  value={field.value || 0}
-                  onChange={(e) => field.onChange(Number(e.target.value) || 0)}
-                  className="w-full text-center text-sm"
+                  value={topicData.lectures || 0}
+                  onChange={(e) => {
+                    const value = Number(e.target.value) || 0;
+                    setValue(topic._id as any, {
+                      ...topicData,
+                      lectures: value,
+                    });
+                  }}
+                  className="w-full text-center text-sm sm:text-base"
                   dir="ltr"
+                  placeholder="0"
                 />
-              )}
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1 text-start">
-              الندوات
-            </label>
-            <Controller
-              name={`${category}.${itemKey}.seminars` as any}
-              control={control}
-              render={({ field }) => (
+              );
+            }}
+          />
+        </td>
+        <td className="px-1 sm:px-2 py-2">
+          <Controller
+            name={`${topic._id}.seminars` as any}
+            control={control}
+            render={({ field }) => {
+              const topicData = watch(topic._id as any) || {
+                individualMeetings: 0,
+                lectures: 0,
+                seminars: 0,
+                healthEvents: 0,
+              };
+              return (
                 <Input
                   type="number"
                   min="0"
-                  {...field}
-                  value={field.value || 0}
-                  onChange={(e) => field.onChange(Number(e.target.value) || 0)}
-                  className="w-full text-center text-sm"
+                  value={topicData.seminars || 0}
+                  onChange={(e) => {
+                    const value = Number(e.target.value) || 0;
+                    setValue(topic._id as any, {
+                      ...topicData,
+                      seminars: value,
+                    });
+                  }}
+                  className="w-full text-center text-sm sm:text-base"
                   dir="ltr"
+                  placeholder="0"
                 />
-              )}
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1 text-start">
-              المناسبات الصحية
-            </label>
-            <Controller
-              name={`${category}.${itemKey}.healthEvents` as any}
-              control={control}
-              render={({ field }) => (
+              );
+            }}
+          />
+        </td>
+        <td className="px-1 sm:px-2 py-2">
+          <Controller
+            name={`${topic._id}.healthEvents` as any}
+            control={control}
+            render={({ field }) => {
+              const topicData = watch(topic._id as any) || {
+                individualMeetings: 0,
+                lectures: 0,
+                seminars: 0,
+                healthEvents: 0,
+              };
+              return (
                 <Input
                   type="number"
                   min="0"
-                  {...field}
-                  value={field.value || 0}
-                  onChange={(e) => field.onChange(Number(e.target.value) || 0)}
-                  className="w-full text-center text-sm"
+                  value={topicData.healthEvents || 0}
+                  onChange={(e) => {
+                    const value = Number(e.target.value) || 0;
+                    setValue(topic._id as any, {
+                      ...topicData,
+                      healthEvents: value,
+                    });
+                  }}
+                  className="w-full text-center text-sm sm:text-base"
                   dir="ltr"
+                  placeholder="0"
                 />
-              )}
-            />
-          </div>
-        </div>
-      </div>
+              );
+            }}
+          />
+        </td>
+      </tr>
     );
   };
 
-  const renderSingleItemCard = (category: string, categoryLabel: string) => {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
-        <h4 className="text-sm font-semibold text-gray-900 mb-3 text-start">
-          {categoryLabel}
-        </h4>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div>
-            <label className="block text-xs text-gray-600 mb-1 text-start">
-              اللقاءات الفردية
-            </label>
-            <Controller
-              name={`${category}.individualMeetings` as any}
-              control={control}
-              render={({ field }) => (
-                <Input
-                  type="number"
-                  min="0"
-                  {...field}
-                  value={field.value || 0}
-                  onChange={(e) => field.onChange(Number(e.target.value) || 0)}
-                  className="w-full text-center text-sm"
-                  dir="ltr"
-                />
-              )}
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1 text-start">
-              المحاضرات
-            </label>
-            <Controller
-              name={`${category}.lectures` as any}
-              control={control}
-              render={({ field }) => (
-                <Input
-                  type="number"
-                  min="0"
-                  {...field}
-                  value={field.value || 0}
-                  onChange={(e) => field.onChange(Number(e.target.value) || 0)}
-                  className="w-full text-center text-sm"
-                  dir="ltr"
-                />
-              )}
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1 text-start">
-              الندوات
-            </label>
-            <Controller
-              name={`${category}.seminars` as any}
-              control={control}
-              render={({ field }) => (
-                <Input
-                  type="number"
-                  min="0"
-                  {...field}
-                  value={field.value || 0}
-                  onChange={(e) => field.onChange(Number(e.target.value) || 0)}
-                  className="w-full text-center text-sm"
-                  dir="ltr"
-                />
-              )}
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1 text-start">
-              المناسبات الصحية
-            </label>
-            <Controller
-              name={`${category}.healthEvents` as any}
-              control={control}
-              render={({ field }) => (
-                <Input
-                  type="number"
-                  min="0"
-                  {...field}
-                  value={field.value || 0}
-                  onChange={(e) => field.onChange(Number(e.target.value) || 0)}
-                  className="w-full text-center text-sm"
-                  dir="ltr"
-                />
-              )}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderCategoryTab = (categoryKey: string) => {
-    const category = categoryLabels[categoryKey as keyof typeof categoryLabels];
-    if (!category) return null;
+  const renderCategoryTab = (category: any, index: number) => {
+    const topics = topicsByCategory[category._id] || [];
 
     return (
-      <TabsContent value={categoryKey} className="mt-4">
-        <div className="space-y-4">
-          {category.items
-            ? Object.entries(category.items).map(([itemKey, itemLabel]) =>
-                renderSubItemCard(categoryKey, itemKey, itemLabel)
-              )
-            : renderSingleItemCard(categoryKey, category.title)}
+      <TabsContent key={category._id} value={category._id} className="mt-4">
+        <div className="bg-white rounded-xl shadow-lg p-3 sm:p-4 md:p-6">
+          {topics.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>لا توجد مواضيع في هذا التصنيف</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px]">
+                <thead>
+                  <tr className="border-b-2 border-gray-300 bg-gray-50">
+                    <th className="px-3 sm:px-4 py-3 text-sm sm:text-base font-bold text-gray-900 text-start">
+                      الموضوع
+                    </th>
+                    <th className="px-1 sm:px-2 py-2 text-xs sm:text-sm font-semibold text-gray-700 text-center min-w-[100px]">
+                      اللقاءات الفردية
+                    </th>
+                    <th className="px-1 sm:px-2 py-2 text-xs sm:text-sm font-semibold text-gray-700 text-center min-w-[100px]">
+                      المحاضرات
+                    </th>
+                    <th className="px-1 sm:px-2 py-2 text-xs sm:text-sm font-semibold text-gray-700 text-center min-w-[100px]">
+                      الندوات
+                    </th>
+                    <th className="px-1 sm:px-2 py-2 text-xs sm:text-sm font-semibold text-gray-700 text-center min-w-[100px]">
+                      المناسبات الصحية
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>{topics.map((topic: any) => renderTopicRow(topic, category))}</tbody>
+              </table>
+            </div>
+          )}
         </div>
       </TabsContent>
     );
   };
 
+  if (categories.length === 0) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-6 text-center">
+        <p className="text-gray-600 mb-4">لا توجد تصنيفات متاحة حالياً</p>
+        <p className="text-sm text-gray-500">يرجى التواصل مع المدير لإضافة التصنيفات والمواضيع</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6" dir="rtl">
       {/* Header with Logo and Title */}
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
         <div className="flex flex-col items-center gap-4">
@@ -658,25 +478,23 @@ export default function DailyStatsForm() {
 
       {/* Tabs */}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Tabs defaultValue="maternalChildHealth" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="bg-white rounded-xl shadow-lg p-3 sm:p-4 mb-4">
-            <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 sm:gap-2 h-auto">
-              {Object.entries(categoryLabels).map(([key, category]) => (
+            <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1 sm:gap-2 h-auto overflow-x-auto">
+              {categories.map((category: any) => (
                 <TabsTrigger
-                  key={key}
-                  value={key}
+                  key={category._id}
+                  value={category._id}
                   className="text-xs sm:text-sm px-2 sm:px-3 py-2 whitespace-normal"
                 >
-                  {category.title}
+                  {category.order}. {category.nameAr}
                 </TabsTrigger>
               ))}
             </TabsList>
           </div>
 
           {/* Tab Contents */}
-          {Object.keys(categoryLabels).map((categoryKey) =>
-            renderCategoryTab(categoryKey)
-          )}
+          {categories.map((category: any, index: number) => renderCategoryTab(category, index))}
         </Tabs>
 
         {/* Submit Buttons */}

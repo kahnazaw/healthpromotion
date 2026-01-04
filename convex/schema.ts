@@ -149,7 +149,36 @@ const applicationTables = {
     .index("by_status", ["status"])
     .index("by_role", ["role"]),
 
-  // جدول الإحصائيات اليومية (Daily Health Statistics)
+  // جدول التصنيفات الرئيسية (Stat Categories)
+  statCategories: defineTable({
+    name: v.string(), // اسم التصنيف (مثل: "الأمراض الانتقالية")
+    nameAr: v.string(), // الاسم بالعربية
+    order: v.number(), // ترتيب العرض
+    isActive: v.boolean(), // هل التصنيف نشط
+    description: v.optional(v.string()), // وصف اختياري
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+  })
+    .index("by_order", ["order"])
+    .index("by_active", ["isActive"]),
+
+  // جدول المواضيع الفرعية (Stat Topics)
+  statTopics: defineTable({
+    categoryId: v.id("statCategories"), // ربط بالتصنيف الرئيسي
+    name: v.string(), // اسم الموضوع (مثل: "الكوليرا")
+    nameAr: v.string(), // الاسم بالعربية
+    order: v.number(), // ترتيب العرض داخل التصنيف
+    isActive: v.boolean(), // هل الموضوع نشط
+    description: v.optional(v.string()), // وصف اختياري
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+  })
+    .index("by_category", ["categoryId"])
+    .index("by_category_and_order", ["categoryId", "order"])
+    .index("by_active", ["isActive"])
+    .index("by_category_and_active", ["categoryId", "isActive"]),
+
+  // جدول الإحصائيات اليومية (Daily Health Statistics) - هيكل ديناميكي
   dailyHealthStats: defineTable({
     healthCenterId: v.id("healthCenters"),
     submissionDate: v.number(), // Timestamp for the date of submission
@@ -157,88 +186,10 @@ const applicationTables = {
     status: v.union(v.literal("draft"), v.literal("submitted"), v.literal("reviewed")),
     submittedAt: v.optional(v.number()),
     
-    // 1. رعاية الأم والطفل (Maternal and Child Health) - 13 عنصر
-    maternalChildHealth: v.object({
-      preMarriageExamination: subItemValidator, // فحص ما قبل الزواج
-      pregnancyCareVisits: subItemValidator, // رعاية الحامل والزيارات الدورية
-      pregnantVaccination: subItemValidator, // لقاح الحامل
-      pregnantNutrition: subItemValidator, // تغذية الحامل
-      highRiskPregnant: subItemValidator, // الحوامل المعرضات للخطورة
-      postDeliveryExamination: subItemValidator, // فحص ما بعد الولادة
-      familyPlanning: subItemValidator, // تنظيم الأسرة
-      womenSafePeriod: subItemValidator, // صحة المرأة فترة الأمان
-      breastCancer: subItemValidator, // سرطان الثدي
-      breastfeeding: subItemValidator, // الرضاعة من الثدي
-      childrenComplementaryFood: subItemValidator, // الأغذية التكميلية للأطفال
-      childrenDiarrhea: subItemValidator, // الأسهال عند الأطفال
-      childrenRespiratoryInfections: subItemValidator, // الألتهابات التنفسية عند الأطفال
-    }),
-
-    // 2. التحصين (Immunization) - 5 عناصر
-    immunization: v.object({
-      childrenVaccination: subItemValidator, // لقاح الأطفال
-      reproductiveAgeMothersVaccination: subItemValidator, // لقاح الأمهات في سن الأنجاب
-      newRoutineVaccines: subItemValidator, // اللقاحات الجديدة ضمن الجدول الروتيني
-      vaccinationCampaigns: subItemValidator, // الحملات التلقيحية
-      otherVaccines: subItemValidator, // اللقاحات الأخرى
-    }),
-
-    // 3. الأمراض الانتقالية (Communicable Diseases) - 13 عنصر
-    communicableDiseases: v.object({
-      cholera: subItemValidator, // الكوليرا
-      pandemicInfluenza: subItemValidator, // الأنفلونزا الوبائية
-      typhoid: subItemValidator, // التايفوئيد
-      foodPoisoning: subItemValidator, // التسمم الغذائي
-      viralHepatitis: subItemValidator, // الكبد الفيروسي
-      tuberculosis: subItemValidator, // التدرن
-      aids: subItemValidator, // الأيدز
-      sexuallyTransmittedDiseases: subItemValidator, // الأمراض المنقولة جنسيا
-      hemorrhagicFever: subItemValidator, // الحمى النزفية
-      leishmaniasis: subItemValidator, // اللشمانيا وانواعها
-      bilharzia: subItemValidator, // البلهارزيا
-      intestinalParasites: subItemValidator, // الطفيليات المعوية
-      rabies: subItemValidator, // داء الكلب
-    }),
-
-    // 4. الأمراض غير الانتقالية (Non-Communicable Diseases) - 10 عناصر
-    nonCommunicableDiseases: v.object({
-      hypertensionDiabetes: subItemValidator, // أمراض الضغط والسكر
-      heartDiseases: subItemValidator, // أمراض القلب والشرايين
-      osteoporosis: subItemValidator, // هشاشة العظام
-      healthyNutrition: subItemValidator, // الغذاء الصحي
-      obesity: subItemValidator, // السمنة
-      iodizedSalt: subItemValidator, // استعمال الملح المدعم باليود
-      anemia: subItemValidator, // فقر الدم
-      vitaminA: subItemValidator, // فيتامين A
-      physicalActivity: subItemValidator, // النشاط البدني
-      thalassemia: subItemValidator, // الثلاسيميا
-    }),
-
-    // 5. الصحة النفسية (Mental Health) - 4 عناصر
-    mentalHealth: v.object({
-      adolescentsYouth: subItemValidator, // اليافعين والشباب
-      smoking: subItemValidator, // التدخين
-      drugs: subItemValidator, // المخدرات
-      domesticViolence: subItemValidator, // العنف الأسري
-    }),
-
-    // 6. الأسعافات والسلامة المهنية (First Aid and Occupational Safety)
-    firstAidOccupationalSafety: subItemValidator,
-
-    // 7. النظافة العامة والشخصية (General and Personal Hygiene)
-    generalPersonalHygiene: subItemValidator,
-
-    // 8. سوء استخدام الادوية (Drug Misuse)
-    drugMisuse: subItemValidator,
-
-    // 9. المقاومة الدوائية (Drug Resistance)
-    drugResistance: subItemValidator,
-
-    // 10. المناسبات الصحية (Health Events)
-    healthEventsCategory: subItemValidator,
-
-    // 11. أخرى (Others)
-    others: subItemValidator,
+    // البيانات الديناميكية: record من topicId (string) إلى القيم الأربعة
+    // المفتاح: topicId كـ string (string representation of Id<"statTopics">)
+    // القيمة: object يحتوي على الأرقام الأربعة
+    data: v.record(v.string(), subItemValidator),
 
     // حقول المراجعة
     review: v.optional(v.object({
