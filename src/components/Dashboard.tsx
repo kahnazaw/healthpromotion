@@ -46,8 +46,7 @@ export default function Dashboard() {
                 }}
               />
               <div>
-                <h1 className="text-xl font-bold text-gray-900 text-start">دائرة صحة كركوك</h1>
-                <p className="text-xs text-emerald-600 font-semibold text-start">قطاع كركوك الأول</p>
+                <h1 className="text-xl font-bold text-gray-900 text-start">دائرة صحة كركوك - قطاع كركوك الأول</h1>
               </div>
             </div>
             <div className="flex items-center gap-3">

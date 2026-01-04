@@ -55,7 +55,7 @@ export default function App() {
                   <img 
                     src="/kirkuk-logo.png" 
                     alt="شعار دائرة صحة كركوك"
-                    className="w-12 h-12 object-contain"
+                    className="w-10 h-10 object-contain"
                     onError={(e) => {
                       // Fallback to Convex storage URL if local file doesn't exist
                       const target = e.target as HTMLImageElement;
@@ -66,9 +66,8 @@ export default function App() {
                   />
                   <div className="flex-1 text-start">
                     <h1 className="text-lg font-bold text-gray-900">
-                      دائرة صحة كركوك
+                      دائرة صحة كركوك - قطاع كركوك الأول
                     </h1>
-                    <p className="text-sm text-gray-600">قطاع كركوك الأول</p>
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 text-center mt-2">نظام إدارة الحملات الصحية</p>

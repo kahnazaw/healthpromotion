@@ -73,8 +73,7 @@ export function SignInForm() {
                 }}
               />
             </div>
-            <h1 className="text-xl font-bold mb-1" style={{ color: '#111827' }}>دائرة صحة كركوك</h1>
-            <p className="text-xs font-semibold mb-1" style={{ color: '#059669' }}>قطاع كركوك الأول - وحدة تعزيز الصحة</p>
+            <h1 className="text-xl font-bold mb-1" style={{ color: '#111827' }}>دائرة صحة كركوك - قطاع كركوك الأول</h1>
             <p className="text-xs" style={{ color: '#6B7280' }}>برمجة وتصميم: م. صيدلي علاء صالح احمد</p>
           </div>
           

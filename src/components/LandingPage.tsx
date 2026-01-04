@@ -26,8 +26,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 }}
               />
               <div className="text-start">
-                <span className="text-white font-bold block">دائرة صحة كركوك</span>
-                <span className="text-white/90 text-sm">قطاع كركوك الأول</span>
+                <span className="text-white font-bold block">دائرة صحة كركوك - قطاع كركوك الأول</span>
               </div>
             </div>
           </div>
@@ -153,8 +152,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                   }}
                 />
                 <div className="text-start">
-                  <span className="text-xl font-bold block">دائرة صحة كركوك</span>
-                  <span className="text-sm text-emerald-400">قطاع كركوك الأول</span>
+                  <span className="text-xl font-bold block">دائرة صحة كركوك - قطاع كركوك الأول</span>
                 </div>
               </div>
               <p className="text-gray-400 text-start">

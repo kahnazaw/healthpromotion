@@ -110,8 +110,7 @@ export default function UserRegistration() {
               }}
             />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">دائرة صحة كركوك</h1>
-          <p className="text-sm text-emerald-600 font-semibold mb-4">قطاع كركوك الأول</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">دائرة صحة كركوك - قطاع كركوك الأول</h1>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">إكمال التسجيل</h2>
           <p className="text-gray-600">
             الرجاء إدخال معلوماتك لإكمال عملية التسجيل
