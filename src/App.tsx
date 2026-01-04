@@ -22,7 +22,7 @@ import UserManagement from "./components/UserManagement";
 import UserRegistration from "./components/UserRegistration";
 import DailyStatsForm from "./components/DailyStatsForm";
 import ManageTopics from "./components/ManageTopics";
-import { FileText, CalendarDays } from "lucide-react";
+import { FileText, CalendarDays, ClipboardList } from "lucide-react";
 
 export default function App() {
   const user = useQuery(api.auth.loggedInUser);
@@ -192,18 +192,22 @@ export default function App() {
                   <span className="text-xl">⭐</span>
                   <span>معرض البوسترات</span>
                 </button>
-                {/* الإحصائيات اليومية - مرئي لجميع المستخدمين */}
-                <button
-                  onClick={() => handlePageChange("daily")}
-                  className={`w-full text-start px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-3 ${
-                    currentPage === "daily"
-                      ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  <FileText className="h-5 w-5" />
-                  <span>الإحصائيات اليومية</span>
-                </button>
+                
+                {/* الإحصائيات اليومية - مرئي للمستخدمين بدور "user" */}
+                {userProfile.role === "user" && (
+                  <button
+                    onClick={() => handlePageChange("daily")}
+                    className={`w-full text-start px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-3 ${
+                      currentPage === "daily"
+                        ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <ClipboardList className="h-5 w-5" />
+                    <span>الإحصائية اليومية</span>
+                  </button>
+                )}
+                
                 <button
                   onClick={() => handlePageChange("weekly")}
                   className={`w-full text-start px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-3 ${
