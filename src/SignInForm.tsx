@@ -21,12 +21,11 @@ export function SignInForm() {
 
   return (
     <div
-      className="flex items-center justify-center relative"
+      className="flex items-center justify-center relative min-h-screen"
       style={{
         maxWidth: '100vw',
         overflow: 'hidden',
-        minHeight: 'auto',
-        padding: '2rem'
+        padding: '1rem'
       }}
     >
       {/* Decorative gradient circles */}
@@ -51,19 +50,19 @@ export function SignInForm() {
       <div
         className="w-full rounded-2xl shadow-2xl overflow-hidden relative z-10"
         style={{
-          maxWidth: '28rem', // 448px - prevents horizontal stretching
+          maxWidth: '28rem', // 448px - prevents horizontal stretching on desktop
           margin: '0 auto', // ensures centering even if parent changes
           background: 'linear-gradient(to bottom, #FFFFFF, #FAFAFA)'
         }}
       >
-        <div className="p-8">
+        <div className="p-4 sm:p-6 md:p-8">
           {/* شعار دائرة صحة كركوك */}
-          <div className="mb-6 text-center">
-            <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center">
+          <div className="mb-4 sm:mb-6 text-center">
+            <div className="mx-auto mb-3 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center">
               <img 
                 src="/kirkuk-logo.png" 
                 alt="شعار دائرة صحة كركوك"
-                className="w-20 h-20 object-contain"
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
                 onError={(e) => {
                   // Fallback to the same logo URL used in Dashboard sidebar
                   const target = e.target as HTMLImageElement;
@@ -73,11 +72,11 @@ export function SignInForm() {
                 }}
               />
             </div>
-            <h1 className="text-xl font-bold mb-1" style={{ color: '#111827' }}>دائرة صحة كركوك - قطاع كركوك الأول</h1>
-            <p className="text-xs" style={{ color: '#6B7280' }}>برمجة وتصميم: م. صيدلي علاء صالح احمد</p>
+            <h1 className="text-base sm:text-lg md:text-xl font-bold mb-1" style={{ color: '#111827' }}>دائرة صحة كركوك - قطاع كركوك الأول</h1>
+            <p className="text-xs hidden sm:block" style={{ color: '#6B7280' }}>برمجة وتصميم: م. صيدلي علاء صالح احمد</p>
           </div>
           
-          <h2 className="text-2xl font-bold mb-2 text-center" style={{ color: '#111827' }}>
+          <h2 className="text-xl sm:text-2xl font-bold mb-2 text-center" style={{ color: '#111827' }}>
             {flow === "signIn" ? "Welcome Back" : "Create Account"}
           </h2>
           <p className="text-sm mb-6 text-center" style={{ color: '#6B7280' }}>
@@ -87,7 +86,7 @@ export function SignInForm() {
           </p>
 
           <form
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-3 sm:gap-4"
             onSubmit={(e) => {
               e.preventDefault();
               setSubmitting(true);

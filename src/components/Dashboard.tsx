@@ -30,13 +30,13 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-lg border-b border-emerald-100 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <div className="flex items-center gap-2 sm:gap-3">
               <img 
                 src="/kirkuk-logo.png" 
                 alt="شعار دائرة صحة كركوك"
-                className="w-10 h-10 object-contain"
+                className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                 onError={(e) => {
                   // Fallback to Convex storage URL if local file doesn't exist
                   const target = e.target as HTMLImageElement;
@@ -46,10 +46,10 @@ export default function Dashboard() {
                 }}
               />
               <div>
-                <h1 className="text-xl font-bold text-gray-900 text-start">دائرة صحة كركوك - قطاع كركوك الأول</h1>
+                <h1 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-900 text-start">دائرة صحة كركوك - قطاع كركوك الأول</h1>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <NotificationBell />
               <SignOutButton />
             </div>
@@ -57,21 +57,21 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Navigation Tabs */}
-        <div className="bg-white rounded-2xl shadow-lg p-2 mb-8">
-          <div className="flex gap-2 overflow-x-auto">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-1 sm:p-2 mb-4 sm:mb-6 md:mb-8">
+          <div className="flex gap-1 sm:gap-2 overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl font-medium transition-all whitespace-nowrap text-sm sm:text-base ${
                   activeTab === tab.id
                     ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                <span className="text-xl">{tab.icon}</span>
+                <span className="text-base sm:text-lg md:text-xl">{tab.icon}</span>
                 <span>{tab.name}</span>
               </button>
             ))}
@@ -82,13 +82,13 @@ export default function Dashboard() {
         {activeTab === "dashboard" && (
           <div className="space-y-8">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div className="flex items-center justify-between mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <img 
                     src="/kirkuk-logo.png" 
                     alt="شعار دائرة صحة كركوك"
-                    className="w-12 h-12 object-contain"
+                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
                     onError={(e) => {
                       // Fallback to Convex storage URL if local file doesn't exist
                       const target = e.target as HTMLImageElement;
@@ -97,49 +97,49 @@ export default function Dashboard() {
                       }
                     }}
                   />
-                  <span className="text-3xl font-bold text-gray-900">{stats?.healthCenters.total || 0}</span>
+                  <span className="text-2xl sm:text-3xl font-bold text-gray-900">{stats?.healthCenters.total || 0}</span>
                 </div>
-                <h3 className="text-start font-semibold text-gray-900 mb-1">المراكز الصحية</h3>
-                <p className="text-start text-sm text-gray-600">{stats?.healthCenters.active || 0} مركز نشط</p>
+                <h3 className="text-start text-sm sm:text-base font-semibold text-gray-900 mb-1">المراكز الصحية</h3>
+                <p className="text-start text-xs sm:text-sm text-gray-600">{stats?.healthCenters.active || 0} مركز نشط</p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                    <span className="text-2xl">📢</span>
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                    <span className="text-xl sm:text-2xl">📢</span>
                   </div>
-                  <span className="text-3xl font-bold text-gray-900">{stats?.campaigns.total || 0}</span>
+                  <span className="text-2xl sm:text-3xl font-bold text-gray-900">{stats?.campaigns.total || 0}</span>
                 </div>
-                <h3 className="text-start font-semibold text-gray-900 mb-1">الحملات الصحية</h3>
-                <p className="text-start text-sm text-gray-600">{stats?.campaigns.active || 0} حملة نشطة</p>
+                <h3 className="text-start text-sm sm:text-base font-semibold text-gray-900 mb-1">الحملات الصحية</h3>
+                <p className="text-start text-xs sm:text-sm text-gray-600">{stats?.campaigns.active || 0} حملة نشطة</p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
-                    <span className="text-2xl">📅</span>
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                    <span className="text-xl sm:text-2xl">📅</span>
                   </div>
-                  <span className="text-3xl font-bold text-gray-900">{stats?.activities.total || 0}</span>
+                  <span className="text-2xl sm:text-3xl font-bold text-gray-900">{stats?.activities.total || 0}</span>
                 </div>
-                <h3 className="text-start font-semibold text-gray-900 mb-1">الأنشطة</h3>
-                <p className="text-start text-sm text-gray-600">{stats?.activities.totalAttendees || 0} مستفيد</p>
+                <h3 className="text-start text-sm sm:text-base font-semibold text-gray-900 mb-1">الأنشطة</h3>
+                <p className="text-start text-xs sm:text-sm text-gray-600">{stats?.activities.totalAttendees || 0} مستفيد</p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-                    <span className="text-2xl">🎨</span>
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                    <span className="text-xl sm:text-2xl">🎨</span>
                   </div>
-                  <span className="text-3xl font-bold text-gray-900">{stats?.posters.total || 0}</span>
+                  <span className="text-2xl sm:text-3xl font-bold text-gray-900">{stats?.posters.total || 0}</span>
                 </div>
-                <h3 className="text-start font-semibold text-gray-900 mb-1">البوسترات</h3>
-                <p className="text-start text-sm text-gray-600">تم إنشاؤها</p>
+                <h3 className="text-start text-sm sm:text-base font-semibold text-gray-900 mb-1">البوسترات</h3>
+                <p className="text-start text-xs sm:text-sm text-gray-600">تم إنشاؤها</p>
               </div>
             </div>
 
             {/* Recent Activities */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 text-start">الأنشطة الأخيرة</h2>
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-5 md:p-6">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-5 md:mb-6 text-start">الأنشطة الأخيرة</h2>
               {!recentActivities ? (
                 <div className="space-y-3">
                   {[1, 2, 3].map((i) => (
