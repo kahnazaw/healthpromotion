@@ -1,5 +1,7 @@
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   BarChart,
   Bar,
@@ -15,11 +17,21 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { exportConsolidatedMonthlyReport } from "../lib/dailyStatsExporter";
 
 export default function ManagerDashboard() {
   const analytics = useQuery(api.managerAnalytics.getAnalytics);
   const comparison = useQuery(api.managerAnalytics.comparePerformance);
   const trends = useQuery(api.managerAnalytics.getTrends);
+  
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [isExporting, setIsExporting] = useState(false);
+  
+  const consolidatedReport = useQuery(
+    api.stats.getConsolidatedMonthlyReport,
+    { month: selectedMonth, year: selectedYear }
+  );
 
   if (!analytics || !comparison || !trends) {
     return (
@@ -34,8 +46,96 @@ export default function ManagerDashboard() {
 
   const COLORS = ["#3B82F6", "#8B5CF6", "#10B981", "#F59E0B", "#EF4444"];
 
+  const handleExport = async () => {
+    if (!consolidatedReport || !consolidatedReport.consolidated) {
+      toast.error("لا توجد بيانات للتصدير");
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      exportConsolidatedMonthlyReport(
+        consolidatedReport.consolidated,
+        selectedMonth,
+        selectedYear,
+        consolidatedReport.totalCenters,
+        consolidatedReport.totalReports
+      );
+      toast.success("تم تصدير الإحصائية الموحدة بنجاح");
+    } catch (error) {
+      toast.error("حدث خطأ أثناء التصدير");
+      console.error(error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* زر تصدير الإحصائية الموحدة */}
+      <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex flex-col sm:flex-row gap-3 flex-1">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 text-start">
+                الشهر
+              </label>
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                className="flex h-10 w-full sm:w-32 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
+                  <option key={m} value={m}>
+                    {getMonthName(m)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 text-start">
+                السنة
+              </label>
+              <input
+                type="number"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                min="2020"
+                max="2100"
+                className="flex h-10 w-full sm:w-24 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                dir="ltr"
+              />
+            </div>
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={handleExport}
+              disabled={isExporting || !consolidatedReport || !consolidatedReport.consolidated}
+              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isExporting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>جاري التصدير...</span>
+                </>
+              ) : (
+                <>
+                  <span>📊</span>
+                  <span>تصدير الإحصائية الموحدة للقطاع</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        {consolidatedReport && (
+          <div className="mt-4 text-sm text-gray-600 text-start">
+            <p>
+              عدد المراكز: <span className="font-semibold">{consolidatedReport.totalCenters}</span> | 
+              عدد التقارير: <span className="font-semibold">{consolidatedReport.totalReports}</span>
+            </p>
+          </div>
+        )}
+      </div>
       {/* ملخص الإحصائيات */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl">
@@ -363,4 +463,23 @@ export default function ManagerDashboard() {
       </div>
     </div>
   );
+}
+
+// دالة مساعدة للحصول على اسم الشهر بالعربية
+function getMonthName(month: number): string {
+  const months = [
+    "يناير",
+    "فبراير",
+    "مارس",
+    "أبريل",
+    "مايو",
+    "يونيو",
+    "يوليو",
+    "أغسطس",
+    "سبتمبر",
+    "أكتوبر",
+    "نوفمبر",
+    "ديسمبر",
+  ];
+  return months[month - 1] || "";
 }

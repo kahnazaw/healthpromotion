@@ -20,12 +20,13 @@ import ManagerReview from "./components/ManagerReview";
 import ManagerDashboard from "./components/ManagerDashboard";
 import UserManagement from "./components/UserManagement";
 import UserRegistration from "./components/UserRegistration";
+import DailyStatsForm from "./components/DailyStatsForm";
 
 export default function App() {
   const user = useQuery(api.auth.loggedInUser);
   const userProfile = useQuery(api.userManagement.getCurrentUserProfile);
   const [currentPage, setCurrentPage] = useState<
-    "landing" | "dashboard" | "campaigns" | "activities" | "centers" | "posters" | "gallery" | "reports" | "stats" | "weekly" | "review" | "manager" | "users"
+    "landing" | "dashboard" | "campaigns" | "activities" | "centers" | "posters" | "gallery" | "reports" | "stats" | "weekly" | "review" | "manager" | "users" | "daily"
   >("landing");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -190,6 +191,17 @@ export default function App() {
                   <span>معرض البوسترات</span>
                 </button>
                 <button
+                  onClick={() => handlePageChange("daily")}
+                  className={`w-full text-start px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-3 ${
+                    currentPage === "daily"
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <span className="text-xl">📋</span>
+                  <span>الإحصائيات اليومية</span>
+                </button>
+                <button
                   onClick={() => handlePageChange("weekly")}
                   className={`w-full text-start px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-3 ${
                     currentPage === "weekly"
@@ -326,6 +338,7 @@ export default function App() {
                     {currentPage === "centers" && "المراكز الصحية"}
                     {currentPage === "posters" && "البوسترات التوعوية"}
                     {currentPage === "gallery" && "معرض البوسترات المميزة"}
+                    {currentPage === "daily" && "الإحصائيات اليومية"}
                     {currentPage === "weekly" && "الإحصائيات الأسبوعية"}
                     {currentPage === "stats" && "الإحصائيات الشهرية"}
                     {currentPage === "review" && "مراجعة الإحصائيات"}
@@ -348,6 +361,7 @@ export default function App() {
                 {currentPage === "centers" && <HealthCenters />}
                 {currentPage === "posters" && <Posters />}
                 {currentPage === "gallery" && <PosterGallery />}
+                {currentPage === "daily" && <DailyStatsForm />}
                 {currentPage === "weekly" && <WeeklyStats />}
                 {currentPage === "stats" && <MonthlyStats />}
                 {currentPage === "review" && <ManagerReview />}
