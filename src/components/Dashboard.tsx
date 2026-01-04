@@ -36,7 +36,7 @@ export default function Dashboard() {
               <img 
                 src="/kirkuk-logo.png" 
                 alt="شعار دائرة صحة كركوك"
-                className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                className="w-10 h-10 object-contain"
                 onError={(e) => {
                   // Fallback to Convex storage URL if local file doesn't exist
                   const target = e.target as HTMLImageElement;
