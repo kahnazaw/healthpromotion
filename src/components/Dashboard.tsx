@@ -33,12 +33,21 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <span className="text-2xl">🏥</span>
-              </div>
+              <img 
+                src="/kirkuk-logo.png" 
+                alt="شعار دائرة صحة كركوك"
+                className="w-10 h-10 object-contain"
+                onError={(e) => {
+                  // Fallback to Convex storage URL if local file doesn't exist
+                  const target = e.target as HTMLImageElement;
+                  if (!target.src.includes("polished-pony-114.convex.cloud")) {
+                    target.src = "https://polished-pony-114.convex.cloud/api/storage/b69b6463-3c48-4960-9c5b-e58e96902f2e";
+                  }
+                }}
+              />
               <div>
                 <h1 className="text-xl font-bold text-gray-900 text-start">دائرة صحة كركوك</h1>
-                <p className="text-xs text-emerald-600 font-semibold text-start">قطاع كركوك الأول - وحدة تعزيز الصحة</p>
+                <p className="text-xs text-emerald-600 font-semibold text-start">قطاع كركوك الأول</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -77,9 +86,18 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                    <span className="text-2xl">🏥</span>
-                  </div>
+                  <img 
+                    src="/kirkuk-logo.png" 
+                    alt="شعار دائرة صحة كركوك"
+                    className="w-12 h-12 object-contain"
+                    onError={(e) => {
+                      // Fallback to Convex storage URL if local file doesn't exist
+                      const target = e.target as HTMLImageElement;
+                      if (!target.src.includes("polished-pony-114.convex.cloud")) {
+                        target.src = "https://polished-pony-114.convex.cloud/api/storage/b69b6463-3c48-4960-9c5b-e58e96902f2e";
+                      }
+                    }}
+                  />
                   <span className="text-3xl font-bold text-gray-900">{stats?.healthCenters.total || 0}</span>
                 </div>
                 <h3 className="text-start font-semibold text-gray-900 mb-1">المراكز الصحية</h3>

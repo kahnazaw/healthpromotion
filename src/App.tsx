@@ -53,15 +53,22 @@ export default function App() {
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center gap-3 mb-2">
                   <img 
-                    src="https://polished-pony-114.convex.cloud/api/storage/b69b6463-3c48-4960-9c5b-e58e96902f2e" 
-                    alt="شعار قطاع كركوك الأول"
+                    src="/kirkuk-logo.png" 
+                    alt="شعار دائرة صحة كركوك"
                     className="w-12 h-12 object-contain"
+                    onError={(e) => {
+                      // Fallback to Convex storage URL if local file doesn't exist
+                      const target = e.target as HTMLImageElement;
+                      if (!target.src.includes("polished-pony-114.convex.cloud")) {
+                        target.src = "https://polished-pony-114.convex.cloud/api/storage/b69b6463-3c48-4960-9c5b-e58e96902f2e";
+                      }
+                    }}
                   />
                   <div className="flex-1 text-start">
                     <h1 className="text-lg font-bold text-gray-900">
-                      قطاع كركوك الأول
+                      دائرة صحة كركوك
                     </h1>
-                    <p className="text-sm text-gray-600">وحدة تعزيز الصحة</p>
+                    <p className="text-sm text-gray-600">قطاع كركوك الأول</p>
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 text-center mt-2">نظام إدارة الحملات الصحية</p>

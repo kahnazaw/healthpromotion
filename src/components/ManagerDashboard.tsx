@@ -41,9 +41,16 @@ export default function ManagerDashboard() {
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl">
           <div className="flex items-center justify-between mb-2">
             <img 
-              src="https://i.imgur.com/9KXqZ5L.png" 
+              src="/kirkuk-logo.png" 
               alt="شعار دائرة صحة كركوك" 
               className="w-12 h-12 object-contain"
+              onError={(e) => {
+                // Fallback to Convex storage URL if local file doesn't exist
+                const target = e.target as HTMLImageElement;
+                if (!target.src.includes("polished-pony-114.convex.cloud")) {
+                  target.src = "https://polished-pony-114.convex.cloud/api/storage/b69b6463-3c48-4960-9c5b-e58e96902f2e";
+                }
+              }}
             />
             <span className="text-sm opacity-80">المراكز</span>
           </div>

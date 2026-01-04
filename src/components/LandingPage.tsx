@@ -13,10 +13,21 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
           <div className="mb-8">
             <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-lg rounded-full px-6 py-3 mb-8">
-              <span className="text-3xl">🏥</span>
+              <img 
+                src="/kirkuk-logo.png" 
+                alt="شعار دائرة صحة كركوك"
+                className="w-12 h-12 object-contain"
+                onError={(e) => {
+                  // Fallback to Convex storage URL if local file doesn't exist
+                  const target = e.target as HTMLImageElement;
+                  if (!target.src.includes("polished-pony-114.convex.cloud")) {
+                    target.src = "https://polished-pony-114.convex.cloud/api/storage/b69b6463-3c48-4960-9c5b-e58e96902f2e";
+                  }
+                }}
+              />
               <div className="text-start">
                 <span className="text-white font-bold block">دائرة صحة كركوك</span>
-                <span className="text-white/90 text-sm">قطاع كركوك الأول - وحدة تعزيز الصحة</span>
+                <span className="text-white/90 text-sm">قطاع كركوك الأول</span>
               </div>
             </div>
           </div>
@@ -129,12 +140,21 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                  <span className="text-2xl">🏥</span>
-                </div>
+                <img 
+                  src="/kirkuk-logo.png" 
+                  alt="شعار دائرة صحة كركوك"
+                  className="w-10 h-10 object-contain"
+                  onError={(e) => {
+                    // Fallback to Convex storage URL if local file doesn't exist
+                    const target = e.target as HTMLImageElement;
+                    if (!target.src.includes("polished-pony-114.convex.cloud")) {
+                      target.src = "https://polished-pony-114.convex.cloud/api/storage/b69b6463-3c48-4960-9c5b-e58e96902f2e";
+                    }
+                  }}
+                />
                 <div className="text-start">
                   <span className="text-xl font-bold block">دائرة صحة كركوك</span>
-                  <span className="text-sm text-emerald-400">قطاع كركوك الأول - وحدة تعزيز الصحة</span>
+                  <span className="text-sm text-emerald-400">قطاع كركوك الأول</span>
                 </div>
               </div>
               <p className="text-gray-400 text-start">

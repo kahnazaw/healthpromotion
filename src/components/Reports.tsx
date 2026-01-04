@@ -191,8 +191,19 @@ export default function Reports() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border-2 border-emerald-200">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-4">
-                <span className="text-2xl">🏥</span>
+              <div className="w-12 h-12 flex items-center justify-center mb-4">
+                <img 
+                  src="/kirkuk-logo.png" 
+                  alt="شعار دائرة صحة كركوك"
+                  className="w-12 h-12 object-contain"
+                  onError={(e) => {
+                    // Fallback to Convex storage URL if local file doesn't exist
+                    const target = e.target as HTMLImageElement;
+                    if (!target.src.includes("polished-pony-114.convex.cloud")) {
+                      target.src = "https://polished-pony-114.convex.cloud/api/storage/b69b6463-3c48-4960-9c5b-e58e96902f2e";
+                    }
+                  }}
+                />
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">{dashboardStats.healthCenters.total}</div>
               <div className="text-sm text-gray-600">مراكز صحية</div>

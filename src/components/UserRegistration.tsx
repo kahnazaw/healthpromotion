@@ -96,11 +96,22 @@ export default function UserRegistration() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-4">
-            <span className="text-5xl">🏥</span>
+          <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4">
+            <img 
+              src="/kirkuk-logo.png" 
+              alt="شعار دائرة صحة كركوك"
+              className="w-20 h-20 object-contain"
+              onError={(e) => {
+                // Fallback to Convex storage URL if local file doesn't exist
+                const target = e.target as HTMLImageElement;
+                if (!target.src.includes("polished-pony-114.convex.cloud")) {
+                  target.src = "https://polished-pony-114.convex.cloud/api/storage/b69b6463-3c48-4960-9c5b-e58e96902f2e";
+                }
+              }}
+            />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-1">دائرة صحة كركوك</h1>
-          <p className="text-sm text-emerald-600 font-semibold mb-4">قطاع كركوك الأول - وحدة تعزيز الصحة</p>
+          <p className="text-sm text-emerald-600 font-semibold mb-4">قطاع كركوك الأول</p>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">إكمال التسجيل</h2>
           <p className="text-gray-600">
             الرجاء إدخال معلوماتك لإكمال عملية التسجيل
