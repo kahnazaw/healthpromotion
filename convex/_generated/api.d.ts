@@ -11,6 +11,7 @@
 import type * as activities from "../activities.js";
 import type * as auth from "../auth.js";
 import type * as campaigns from "../campaigns.js";
+import type * as constants from "../constants.js";
 import type * as dashboard from "../dashboard.js";
 import type * as healthCenters from "../healthCenters.js";
 import type * as http from "../http.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   activities: typeof activities;
   auth: typeof auth;
   campaigns: typeof campaigns;
+  constants: typeof constants;
   dashboard: typeof dashboard;
   healthCenters: typeof healthCenters;
   http: typeof http;

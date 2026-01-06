@@ -17,8 +17,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { exportConsolidatedMonthlyReport } from "../lib/dailyStatsExporter";
-import { exportToExcel, exportStatsToExcel } from "../lib/exportToExcel";
+import { exportConsolidatedMonthlyReport } from "../../lib/dailyStatsExporter";
+import { exportToExcel, exportStatsToExcel } from "../../lib/exportToExcel";
 import { Download } from "lucide-react";
 
 export default function ManagerDashboard() {

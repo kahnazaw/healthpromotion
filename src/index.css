@@ -62,9 +62,6 @@ body {
     @apply bg-background text-foreground;
   }
 }
-  color: var(--color-dark);
-  background: var(--color-light);
-}
 
 /* only use this to update the style of the auth input fields. use a different class for all other input fields */
 .auth-input-field {

@@ -1,28 +1,40 @@
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useQuery } from "convex/react";
-import { SignInForm } from "./SignInForm";
-import { SignOutButton } from "./SignOutButton";
 import { useState } from "react";
 import { Toaster } from "sonner";
-import Dashboard from "./components/Dashboard";
-import Campaigns from "./components/Campaigns";
-import Activities from "./components/Activities";
-import HealthCenters from "./components/HealthCenters";
-import Posters from "./components/Posters";
-import PosterGallery from "./components/PosterGallery";
-import Reports from "./components/Reports";
-import NotificationBell from "./components/NotificationBell";
-import LandingPage from "./components/LandingPage";
-import MonthlyStats from "./components/MonthlyStats";
-import WeeklyStats from "./components/WeeklyStats";
-import ManagerReview from "./components/ManagerReview";
-import ManagerDashboard from "./components/ManagerDashboard";
-import UserManagement from "./components/UserManagement";
-import UserRegistration from "./components/UserRegistration";
-import DailyStatsForm from "./components/DailyStatsForm";
-import ManageTopics from "./components/ManageTopics";
-import { FileText, CalendarDays, ClipboardList } from "lucide-react";
+import { ClipboardList } from "lucide-react";
+
+// Auth
+import { SignInForm } from "./features/auth/SignInForm";
+import { SignOutButton } from "./features/auth/SignOutButton";
+
+// Dashboard
+import Dashboard from "./features/dashboard/Dashboard";
+import ManagerDashboard from "./features/dashboard/ManagerDashboard";
+
+// Features
+import Campaigns from "./features/campaigns/Campaigns";
+import Activities from "./features/activities/Activities";
+import HealthCenters from "./features/health-centers/HealthCenters";
+import Posters from "./features/posters/Posters";
+import PosterGallery from "./features/posters/PosterGallery";
+import Reports from "./features/reports/Reports";
+
+// Statistics
+import DailyStatsForm from "./features/statistics/DailyStatsForm";
+import WeeklyStats from "./features/statistics/WeeklyStats";
+import MonthlyStats from "./features/statistics/MonthlyStats";
+import ManagerReview from "./features/statistics/ManagerReview";
+import ManageTopics from "./features/statistics/ManageTopics";
+
+// Admin
+import UserManagement from "./features/admin/UserManagement";
+import UserRegistration from "./features/admin/UserRegistration";
+
+// Shared Components
+import NotificationBell from "./shared/components/NotificationBell";
+import LandingPage from "./shared/components/LandingPage";
 
 export default function App() {
   const user = useQuery(api.auth.loggedInUser);
